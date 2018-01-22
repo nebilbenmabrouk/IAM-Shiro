@@ -1,14 +1,176 @@
-group 'org.ow2.proactive.iam'
-version '7.35.0-SNAPSHOT'
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            url "http://repository.activeeon.com/content/groups/proactive/"
+        }
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
 
+    dependencies {
+        classpath "io.spring.gradle:dependency-management-plugin:0.6.0.RELEASE"
+        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.5.0'
+        classpath "com.diffplug.gradle.spotless:spotless:2.4.0"
+        classpath "org.ow2.proactive:coding-rules:1.0.0"
+        classpath 'org.akhikhl.gretty:gretty:+'
+    }
+
+    dependencies {
+        delete "gradle/ext"
+        ant.unjar src: configurations.classpath.find { it.name.startsWith("coding-rules") }, dest: 'gradle/ext'
+    }
+}
+
+apply plugin: "io.spring.dependency-management"
+apply from: "$rootDir/gradle/ext/coding-format.gradle"
+apply plugin: 'com.github.kt3k.coveralls'
+apply plugin: 'antlr'
+apply plugin: 'jacoco'
 apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'war'
+apply plugin: 'org.akhikhl.gretty'
 
-sourceCompatibility = 1.8
+group = 'org.ow2.proactive'
+version = version
 
 repositories {
+
+    if (project.hasProperty('local')) {
+        mavenLocal()
+    }
     mavenCentral()
+    jcenter()
+    maven { url 'http://repository.activeeon.com/content/groups/proactive/' }
+}
+
+configurations {
+    integrationTestCompile.extendsFrom testCompile
+    integrationTestRuntime.extendsFrom testRuntime
+}
+
+compileJava {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
+
+coveralls {
+    sourceDirs = allprojects.sourceSets.main.allSource.srcDirs.flatten()
+    jacocoReportPath = "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            snapshotRepository(url: "http://repository.activeeon.com/content/repositories/snapshots/") {
+                authentication(userName: "${System.getProperty('nexusUsername')}",
+                        password: "${System.getProperty('nexusPassword')}")
+            }
+            repository(url: "http://repository.activeeon.com/content/repositories/releases/") {
+                authentication(userName: "${System.getProperty('nexusUsername')}",
+                        password: "${System.getProperty('nexusPassword')}")
+            }
+        }
+    }
+}
+
+sourceSets {
+
+    integrationTest {
+        java {
+            srcDir file('src/integrationTest/java')
+            compileClasspath = sourceSets.main.output + configurations.integrationTestCompile
+            runtimeClasspath = output + compileClasspath + configurations.integrationTestRuntime
+        }
+        resources.srcDir file('src/integrationTest/resources')
+    }
+}
+
+war {
+    baseName = "IAM"
+    version = version
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.ow2.proactive:parent-bom:${version}"
+    }
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    antlr 'org.antlr:antlr4'
+    testCompile 'junit:junit'
+
+    compile group: 'commons-logging', name: 'commons-logging', version: '1.2'
+    compile group: 'log4j', name: 'log4j', version: '1.2.17'
+
+    compile group: 'org.apache.shiro', name: 'shiro-core', version: '1.3.2'
+    compile group: 'org.apache.shiro', name: 'shiro-web', version: '1.3.2'
+
+    compile group: 'org.apache.directory.server', name: 'apacheds-all', version: '2.0.0-M24'
+
+    compile group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1'
+}
+
+test {
+    jacoco {
+        destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
+    }
+}
+
+task integrationTest(type: Test) {
+    testClassesDir = sourceSets.integrationTest.output.classesDir
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    classpath += sourceSets.test.runtimeClasspath
+
+    jacoco {
+        destinationFile = file("$buildDir/jacoco/jacocoIntegrationTest.exec")
+    }
+
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+gretty {
+    httpsEnabled = true
+    // optionally you can specify port. 8443 is the default.
+    httpsPort = 8443
+    httpPort = 8080
+    contextPath = '/iam'
+    servletContainer = 'jetty9'
+}
+
+jacocoTestReport {
+    executionData test, integrationTest
+
+    sourceSets project.sourceSets.main
+
+    reports {
+        html.enabled = true
+        xml.enabled = true
+    }
+
+    // remove auto-generated classes from report
+    afterEvaluate {
+        classDirectories = files(classDirectories.files.collect {
+            fileTree(dir: it, excludes: [
+                    'org/ow2/proactive/iam/rest/*']);
+        })
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.10'
+}
+
+integrationTest.mustRunAfter test
+check.dependsOn integrationTest
+jacocoTestReport.dependsOn check
+tasks.coveralls.dependsOn jacocoTestReport
+
+tasks.withType(Test) {
+    reports.html.destination = file("${reporting.baseDir}/${name}")
 }
