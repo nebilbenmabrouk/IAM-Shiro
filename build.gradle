@@ -115,8 +115,8 @@ dependencies {
 
     compile group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1'
 
-    //compile group: 'org.apache.cxf', name: 'cxf-rt-rs-http-sci', version: '3.2.1'
-    //compile group: 'org.apache.cxf', name: 'cxf-rt-frontend-jaxws', version: '3.2.1'
+    compile group: 'org.apache.cxf', name: 'cxf-rt-rs-http-sci', version: '3.2.1'
+    compile group: 'org.apache.cxf', name: 'cxf-rt-frontend-jaxws', version: '3.2.1'
 
 }
 
@@ -145,7 +145,7 @@ gretty {
     // optionally you can specify port. 8443 is the default.
     httpsPort = 8443
     httpPort = 8080
-    contextPath = '/'
+    contextPath = '/iam'
     servletContainer = 'jetty9'
 }
 
