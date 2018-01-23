@@ -31,8 +31,6 @@ import javax.servlet.annotation.WebListener;
 
 import org.apache.log4j.Logger;
 import org.ow2.proactive.iam.backend.embedded.ldap.EmbeddedLDAPServer;
-import org.ow2.proactive.iam.identity.provisioning.Identity;
-import org.ow2.proactive.iam.identity.provisioning.IdentityManagement;
 import org.ow2.proactive.iam.identity.provisioning.LocalLDAPIdentityManagement;
 import org.ow2.proactive.iam.util.PropertiesHelper;
 
@@ -50,19 +48,21 @@ public class IAMContextListener implements ServletContextListener {
 
     private final String iamProperties = "iam.properties";
 
+    private PropertiesHelper propHelper = new PropertiesHelper(iamProperties);
+
+    private String backend = propHelper.getValueAsString("iam.backend", "embeddedLDAP");
+
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
 
         try {
-            PropertiesHelper propHelper = new PropertiesHelper(iamProperties);
-            String backend = propHelper.getValueAsString("iam.backend", "embeddedLDAP");
 
             if (backend.equals("embeddedLDAP")) {
 
-                logger.info("Starting embedded LDAP server");
+                logger.debug("Starting embedded LDAP server");
                 EmbeddedLDAPServer.INSTANCE.startLDAPServer();
 
-                logger.info("Loading identities");
+                logger.debug("Loading identities");
                 LocalLDAPIdentityManagement idm = new LocalLDAPIdentityManagement(iamProperties);
                 idm.importLdif("identities.ldif");
             }
@@ -76,14 +76,15 @@ public class IAMContextListener implements ServletContextListener {
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
 
         try {
+            if (backend.equals("embeddedLDAP")) {
 
-            EmbeddedLDAPServer.INSTANCE.shutdownLDAPServer();
+                EmbeddedLDAPServer.INSTANCE.shutdownLDAPServer();
+                logger.debug("LDAP Server is stopped!");
+            }
 
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-
-        logger.info("LDAP Server is stopped!");
 
     }
 }

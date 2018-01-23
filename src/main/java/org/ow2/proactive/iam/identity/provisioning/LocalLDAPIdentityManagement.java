@@ -163,6 +163,7 @@ public class LocalLDAPIdentityManagement implements IdentityManagement {
      * @throws Exception
      */
     public void importLdif(String ldifFile) throws Exception {
+
         LdifReader ldifReader = new LdifReader(Thread.currentThread()
                                                      .getContextClassLoader()
                                                      .getResourceAsStream(ldifFile));
@@ -170,12 +171,14 @@ public class LocalLDAPIdentityManagement implements IdentityManagement {
 
             for (LdifEntry ldifEntry : ldifReader) {
                 checkPartition(ldifEntry);
-                System.out.print(ldifEntry.toString());
+                logger.debug(ldifEntry.toString());
                 ds.getAdminSession().add(new DefaultEntry(ds.getSchemaManager(), ldifEntry.getEntry()));
             }
         } finally {
             ldifReader.close();
+            logger.info("LDIF identities loaded");
         }
+
     }
 
     private void checkPartition(LdifEntry ldifEntry) throws Exception {
@@ -184,7 +187,7 @@ public class LocalLDAPIdentityManagement implements IdentityManagement {
         try {
             ds.getAdminSession().exists(parent);
         } catch (Exception e) {
-            System.out.println("Creating new partition for DN=" + dn + "\n");
+            logger.debug("Creating new partition for DN=" + dn + "\n");
             AvlPartition partition = new AvlPartition(ds.getSchemaManager());
             partition.setId(dn.getName());
             partition.setSuffixDn(dn);

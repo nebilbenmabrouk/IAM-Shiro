@@ -108,10 +108,16 @@ dependencies {
 
     compile group: 'org.apache.shiro', name: 'shiro-core', version: '1.3.2'
     compile group: 'org.apache.shiro', name: 'shiro-web', version: '1.3.2'
+    compile group: 'org.apache.shiro', name: 'shiro-servlet-plugin', version: '1.4.0'
+    compile group: 'org.apache.shiro', name: 'shiro-jaxrs', version: '1.4.0'
 
     compile group: 'org.apache.directory.server', name: 'apacheds-all', version: '2.0.0-M24'
 
     compile group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1'
+
+    //compile group: 'org.apache.cxf', name: 'cxf-rt-rs-http-sci', version: '3.2.1'
+    //compile group: 'org.apache.cxf', name: 'cxf-rt-frontend-jaxws', version: '3.2.1'
+
 }
 
 test {
@@ -139,7 +145,7 @@ gretty {
     // optionally you can specify port. 8443 is the default.
     httpsPort = 8443
     httpPort = 8080
-    contextPath = '/iam'
+    contextPath = '/'
     servletContainer = 'jetty9'
 }
 

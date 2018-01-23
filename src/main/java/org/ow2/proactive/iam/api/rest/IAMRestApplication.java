@@ -25,23 +25,26 @@
  */
 package org.ow2.proactive.iam.api.rest;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.ws.rs.core.Application;
+
+import org.apache.shiro.web.jaxrs.ShiroFeature;
 
 
-@Path("/authentication")
-public class Authentification {
+public class IAMRestApplication extends Application {
 
-    /**
-     * Gets the Message.
-     *
-     * @return the message
-     */
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public Boolean getMessage() {
-        return true;
+    @Override
+    public Set<Class<?>> getClasses() {
+        Set<Class<?>> classes = new HashSet<Class<?>>();
+
+        // register Shiro
+        classes.add(ShiroFeature.class);
+
+        // register resources
+        classes.add(AuthenticationService.class);
+
+        return classes;
     }
 }

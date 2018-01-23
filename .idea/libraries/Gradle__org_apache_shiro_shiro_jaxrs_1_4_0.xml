@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: org.apache.shiro:shiro-jaxrs:1.4.0">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.apache.shiro/shiro-jaxrs/1.4.0/32d19b86a736c890eb4d7ea0fb579cad2039d62e/shiro-jaxrs-1.4.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.apache.shiro/shiro-jaxrs/1.4.0/dc0cd5b77fbf9793d418cb87318eaf19402dd05/shiro-jaxrs-1.4.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

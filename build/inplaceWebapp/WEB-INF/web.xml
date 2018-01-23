@@ -30,4 +30,21 @@
         <dispatcher>ERROR</dispatcher>
     </filter-mapping>
 
+   <servlet>
+        <servlet-name>DefaultServlet</servlet-name>
+        <display-name>Default Servlet</display-name>
+        <servlet-class>org.eclipse.jetty.servlet.DefaultServlet</servlet-class>
+        <init-param>
+            <param-name>javax.ws.rs.Application</param-name>
+            <param-value>org.ow2.proactive.iam.api.rest.IAMRestApplication</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>DefaultServlet</servlet-name>
+        <url-pattern>/authentication/*</url-pattern>
+    </servlet-mapping>
+
+
 </web-app>
