@@ -23,30 +23,32 @@
  * If needed, contact us to obtain a release under GPL Version 2 or 3
  * or a different license than the AGPL.
  */
-package org.ow2.proactive.iam.api.rest;
+package org.ow2.proactive.iam.authorization;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.io.UnsupportedEncodingException;
 
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.core.Application;
-
-import org.apache.shiro.web.jaxrs.ShiroFeature;
+import org.apache.shiro.codec.Base64;
 
 
-@ApplicationPath("/rest")
-public class IAMRestApplication extends Application {
+/**
+ * Created by nebil on 23/01/18.
+ */
+public class AuthorizationHeader {
 
-    @Override
-    public Set<Class<?>> getClasses() {
-        Set<Class<?>> classes = new HashSet<Class<?>>();
+    private static String getBasicAuthorizationHeaderValue(String username, String password)
+            throws UnsupportedEncodingException {
+        String authorizationHeader = username + ":" + password;
+        byte[] valueBytes;
+        valueBytes = authorizationHeader.getBytes("UTF-8");
+        authorizationHeader = new String(Base64.encode(valueBytes));
+        return "Basic " + authorizationHeader;
+    }
 
-        // register Shiro
-        classes.add(ShiroFeature.class);
-
-        // register resources
-        classes.add(AuthenticationService.class);
-
-        return classes;
+    public static void main(String[] args) {
+        try {
+            System.out.println(getBasicAuthorizationHeaderValue("admin", "admin"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
     }
 }

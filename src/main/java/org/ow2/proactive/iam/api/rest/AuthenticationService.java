@@ -25,64 +25,37 @@
  */
 package org.ow2.proactive.iam.api.rest;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Resource;
 import javax.security.auth.login.LoginException;
 import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.xml.ws.WebServiceContext;
-import javax.xml.ws.handler.MessageContext;
+import javax.ws.rs.HeaderParam;
 
 import org.apache.log4j.Logger;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.ow2.proactive.iam.authentication.Authentication;
 
 
-@Path("authentication")
-@Produces({ "application/json", "plain/text" })
+@Path("/authentication")
+@Produces({ "application/json" })
 public class AuthenticationService {
 
     private Logger logger = Logger.getLogger(AuthenticationService.class);
 
-    @Resource
-    WebServiceContext wsctx;
-
     /**
-     * Gets the Message.
+     * Login to ProActive using 2 params (username and password).
      *
-     * @return the message
+     * @param username  username
+     * @param password  password
+     * @return true or false, whether the given user credentials are correct.
      */
-    //   @RequiresAuthentication
-    // @Path("isAuthenticated")
     @GET
-    @Consumes(MediaType.APPLICATION_JSON)
     @Produces("application/json")
-    public Boolean isAuthenticated() {
-
-        MessageContext mctx = wsctx.getMessageContext();
-        Map http_headers = (Map) mctx.get(MessageContext.HTTP_REQUEST_HEADERS);
-
-        List<String> userList = (List) http_headers.get("Username");
-        List<String> passList = (List) http_headers.get("Password");
-
-        String username = null;
-        String password = null;
-        if (userList != null) {
-            username = userList.get(0);
-        }
-        if (passList != null) {
-            password = passList.get(0);
-        }
-
-        logger.info(username);
+    public String isAuthenticated(@HeaderParam("username") String username, @HeaderParam("password") String password) {
 
         if (username != null && password != null) {
-            return Authentication.isAuthenticated(username, password);
-        } else
-            return false;
-
+            return String.valueOf(Authentication.isAuthenticated(username, password));
+        } else {
+            return String.valueOf(false);
+        }
     }
 
     /**
@@ -90,34 +63,19 @@ public class AuthenticationService {
      *
      * @param username  username
      * @param password  password
-     * @return the session id associated to the login.
-     * @throws LoginException
+     * @return true or false, whether the given user credentials are correct.
      */
-    //   @RequiresAuthentication
-    // @Path("access")
+    @RequiresAuthentication
     @POST
-    @Consumes(MediaType.TEXT_PLAIN)
     @Produces("application/json")
     public String login(@FormParam("username") String username, @FormParam("password") String password)
             throws LoginException {
 
-        logger.info(username + "," + password);
-
-        String token = null;
-        try {
-            if ((username == null) || (password == null)) {
-                throw new LoginException("Empty login/password");
-            } else {
-                boolean b = Authentication.isAuthenticated(username, password);
-                logger.info(b);
-                token = "token";
-            }
-
-        } catch (Exception e) {
-            logger.error(e.getMessage());
+        if (username != null && password != null) {
+            return String.valueOf(Authentication.isAuthenticated(username, password));
+        } else {
+            return String.valueOf(false);
         }
-        return token;
-
     }
 
 }

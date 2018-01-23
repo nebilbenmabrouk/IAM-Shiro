@@ -25,53 +25,40 @@
  */
 package org.ow2.proactive.iam.authentication;
 
+import org.apache.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
-import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.Factory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 public class Authentication {
 
-    private static Logger logger = LoggerFactory.getLogger(Authentication.class);
+    private static Logger logger = Logger.getLogger(Authentication.class);
 
     public static boolean isAuthenticated(String username, String password) {
 
-        // Using the IniSecurityManagerFactory, which will use the an INI file
-        // as the security file.
-        Factory<org.apache.shiro.mgt.SecurityManager> factory = new IniSecurityManagerFactory("classpath:shiro.ini");
-
-        // Setting up the SecurityManager...
-        org.apache.shiro.mgt.SecurityManager securityManager = factory.getInstance();
-        SecurityUtils.setSecurityManager(securityManager);
-
-        Subject currentUser = SecurityUtils.getSubject();
-
-        return currentUser.isAuthenticated();
-    }
-
-    public static UsernamePasswordToken getToken(String username, String password) {
+        Subject user = SecurityUtils.getSubject();
 
         UsernamePasswordToken token = new UsernamePasswordToken(username, password);
         token.setRememberMe(true);
 
         try {
-            Subject user = SecurityUtils.getSubject();
             user.login(token);
+            return user.isAuthenticated();
+
         } catch (UnknownAccountException e) {
             logger.error("There is no user with username of " + token.getPrincipal());
+            return false;
         } catch (IncorrectCredentialsException e) {
             logger.error("Password for account " + token.getPrincipal() + " was incorrect!");
+            return false;
         } catch (LockedAccountException e) {
             logger.error("The account for username " + token.getPrincipal() + " is locked.  " +
                          "Please contact your administrator to unlock it.");
+            return false;
         } catch (AuthenticationException e) {
             logger.error(e.getMessage());
+            return false;
         }
-
-        return token;
     }
 }
