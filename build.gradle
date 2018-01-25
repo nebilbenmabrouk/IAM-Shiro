@@ -142,7 +142,6 @@ task integrationTest(type: Test) {
 
 gretty {
     httpsEnabled = true
-    // optionally you can specify port. 8443 is the default.
     httpsPort = 8443
     httpPort = 8080
     contextPath = '/iam'
@@ -179,4 +178,18 @@ tasks.coveralls.dependsOn jacocoTestReport
 
 tasks.withType(Test) {
     reports.html.destination = file("${reporting.baseDir}/${name}")
+=======
+group 'org.ow2.proactive.iam'
+version '7.35.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
 }
